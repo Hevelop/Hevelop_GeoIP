@@ -16,7 +16,7 @@ use Magento\Framework\App\Helper\Context;
 class Data extends AbstractHelper
 {
 
-    const DATE_FORMAT = 'h:m d/M/Y';
+    const DATE_FORMAT = 'h:i:s d/M/Y';
 
     /**
      * Get size of remote file
