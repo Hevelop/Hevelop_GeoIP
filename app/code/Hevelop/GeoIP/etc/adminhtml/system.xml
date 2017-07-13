@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2017 Hevelop. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="hevelop_geoip" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
+                 showInStore="1">
+            <class>separator-top</class>
+            <label>GeoIP</label>
+            <tab>hevelop_config</tab>
+            <resource>Hevelop_GeoIP::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>General</label>
+                <field id="geoip_status" translate="label comment" sortOrder="110" showInDefault="1" showInWebsite="0"
+                       showInStore="0">
+                    <label>GeoIP Database Downloaded</label>
+                    <frontend_model>Hevelop\GeoIP\Block\System\Config\Status</frontend_model>
+                </field>
+                <field id="geoip_synchronize" translate="label comment" sortOrder="120" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <frontend_model>Hevelop\GeoIP\Block\System\Config\Synchronize</frontend_model>
+                    <comment>If you synchronize GeoIP database too often you may be banned for several hours.</comment>
+                </field>
+                <field id="geoip_directory" type="text" translate="label comment" sortOrder="130" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>GeoIP Database Directory</label>
+                    <comment>The base directory in which the GeoIP database will be stored</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
