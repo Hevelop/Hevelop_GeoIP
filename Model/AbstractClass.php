@@ -120,24 +120,21 @@ class AbstractClass
      */
     public function checkFilePermissions()
     {
-        /** @var $helper Hevelop_GeoIP_Helper_Data */
-        $helper = $this->geoIPHelper;
-
         $relativeDirPath = $this->getRelativeDirectoryPath();
 
         $dir = $this->getAbsoluteDirectoryPath() . '/' . $this->localDir;
         if (file_exists($dir)) {
             if (!is_dir($dir)) {
-                return sprintf($helper->__('%s exists but it is file, not dir.'), "$relativeDirPath/{$this->localDir}");
+                return sprintf(__('%s exists but it is file, not dir.'), "$relativeDirPath/{$this->localDir}");
             } elseif ((!file_exists($this->localFile) || !file_exists($this->localArchive)) && !is_writable($dir)) {
-                return sprintf($helper->__('%s exists but files are not and directory is not writable.'), "$relativeDirPath/{$this->localDir}");
+                return sprintf(__('%s exists but files are not and directory is not writable.'), "$relativeDirPath/{$this->localDir}");
             } elseif (file_exists($this->localFile) && !is_writable($this->localFile)) {
-                return sprintf($helper->__('%s is not writable.'), "$relativeDirPath/{$this->localDir}" . '/GeoIP.dat');
+                return sprintf(__('%s is not writable.'), "$relativeDirPath/{$this->localDir}" . '/GeoIP.dat');
             } elseif (file_exists($this->localArchive) && !is_writable($this->localArchive)) {
-                return sprintf($helper->__('%s is not writable.'), "$relativeDirPath/{$this->localDir}" . '/GeoIP.dat.gz');
+                return sprintf(__('%s is not writable.'), "$relativeDirPath/{$this->localDir}" . '/GeoIP.dat.gz');
             }
         } elseif (!@mkdir($dir)) {
-            return sprintf($helper->__('Can\'t create %s directory.'), "$relativeDirPath/{$this->localDir}");
+            return sprintf(__('Can\'t create %s directory.'), "$relativeDirPath/{$this->localDir}");
         }
 
         return '';
@@ -159,7 +156,7 @@ class AbstractClass
         } else {
             $remote_file_size = $helper->getSize($this->remoteArchive);
             if ($remote_file_size < 100000) {
-                $ret['message'] = $helper->__('You are banned from downloading the file. Please try again in several hours.');
+                $ret['message'] = __('You are banned from downloading the file. Please try again in several hours.');
             } else {
                 /** @var $_session Mage_Core_Model_Session */
                 $_session = $this->generic;
@@ -175,10 +172,10 @@ class AbstractClass
                         $ret['status'] = 'success';
                         $ret['date'] = $this->_date->date(Data::DATE_FORMAT);
                     } else {
-                        $ret['message'] = $helper->__('UnGzipping failed');
+                        $ret['message'] = __('UnGzipping failed');
                     }
                 } else {
-                    $ret['message'] = $helper->__('Download failed.');
+                    $ret['message'] = __('Download failed.');
                 }
             }
         }
