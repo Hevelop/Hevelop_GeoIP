@@ -9,6 +9,7 @@ use Hevelop\GeoIP\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 
 /**
  * Class Country
@@ -41,6 +42,11 @@ class Country extends AbstractClass
      */
     protected $geoIPWrapper;
 
+    /**
+     * @var RemoteAddress
+     */
+    protected $remoteAddress;
+
 
     /**
      * Country constructor.
@@ -51,6 +57,7 @@ class Country extends AbstractClass
      * @param DirectoryList $directoryList
      * @param TimezoneInterface $_localeDate
      * @param DateTime $date
+     * @param RemoteAddress $remoteAddress
      * @param array $data
      */
     public function __construct(
@@ -61,13 +68,16 @@ class Country extends AbstractClass
         DirectoryList $directoryList,
         TimezoneInterface $_localeDate,
         DateTime $date,
+        RemoteAddress $remoteAddress,
         array $data = []
     )
     {
         parent::__construct($scopeConfig, $geoIPHelper, $generic, $directoryList, $_localeDate, $date);
 
         $this->geoIPWrapper = $geoIPWrapper;
-        $this->country = $this->getCountryByIp(Mage::helper('core/http')->getRemoteAddr());
+        $this->remoteAddress = $remoteAddress;
+
+        $this->country = $this->getCountryByIp($this->remoteAddress->getRemoteAddress());
 
         $allowCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE));
         $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
