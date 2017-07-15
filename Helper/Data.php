@@ -4,6 +4,7 @@ namespace Hevelop\GeoIP\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\RequestInterface;
 
 /**
  * Class Data
@@ -17,6 +18,27 @@ class Data extends AbstractHelper
 {
 
     const DATE_FORMAT = 'h:i:s d/M/Y';
+
+    /**
+     * Request object
+     *
+     * @var RequestInterface
+     */
+    protected $request;
+
+
+    /**
+     * Data constructor.
+     * @param RequestInterface $httpRequest
+     * @param array $data
+     */
+    public function __construct(
+        RequestInterface $httpRequest,
+        array $data = []
+    )
+    {
+        $this->request = $httpRequest;
+    }
 
     /**
      * Get size of remote file
@@ -54,6 +76,33 @@ class Data extends AbstractHelper
         fclose($dat);
         gzclose($archive);
         return filesize($destination);
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getClientIps()
+    {
+        $ipaddress = '';
+
+        if ($this->request->getServer('HTTP_CLIENT_IP', false)) {
+            $ipaddress = $this->request->getServer('HTTP_CLIENT_IP');
+        } else if ($this->request->getServer('HTTP_X_FORWARDED_FOR', false)) {
+            $ipaddress = $this->request->getServer('HTTP_X_FORWARDED_FOR', false);
+        } else if ($this->request->getServer('HTTP_X_FORWARDED', false)) {
+            $ipaddress = $this->request->getServer('HTTP_X_FORWARDED', false);
+        } else if ($this->request->getServer('HTTP_FORWARDED_FOR', false)) {
+            $ipaddress = $this->request->getServer('HTTP_FORWARDED_FOR', false);
+        } else if ($this->request->getServer('HTTP_FORWARDED', false)) {
+            $ipaddress = $this->request->getServer('HTTP_FORWARDED', false);
+        } else if ($this->request->getServer('REMOTE_ADDR', false)) {
+            $ipaddress = $this->request->getServer('REMOTE_ADDR');
+        }
+
+        $ipaddress = str_replace(' ', '', $ipaddress);
+        $ipaddress = explode(',', $ipaddress);
+        return $ipaddress;
     }
 
 }
