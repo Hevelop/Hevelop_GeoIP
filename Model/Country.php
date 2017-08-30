@@ -85,23 +85,31 @@ class Country extends AbstractClass
         $this->remoteAddress = $remoteAddress;
         $this->_storeManager = $storeManager;
 
-        $ip = $this->remoteAddress->getRemoteAddress();
+        $ips = $this->remoteAddress->getRemoteAddress();
+        //$ips = '185.128.151.129, 10.0.2.251';
 
-        // HEVELOP (IT)
-        //$ip = '185.128.151.129';
+        $ips = str_replace(' ', '', $ips);
+        $ips = explode(',', $ips);
 
-        // BITBUCKET (US)
-        //$ip = '104.192.143.2';
+        $ips = filter_var_array($ips, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+        if (is_array($ips) && count($ips) > 0) {
+            $ip = $ips[0];
 
-        // MASCHERONI ()
-        //$ip = '35.157.151.144';
-        //var_dump($ip);
+            // HEVELOP (IT)
+            //$ip = '185.128.151.129';
 
-        $this->country = $this->getCountryByIp($ip);
+            // BITBUCKET (US)
+            //$ip = '104.192.143.2';
 
-        $allowCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE));
-        $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
-        $this->addAllowedCountry($allowCountries);
+            // MASCHERONI ()
+            //$ip = '35.157.151.144';
+
+            $this->country = $this->getCountryByIp($ip);
+
+            $allowCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE));
+            $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
+            $this->addAllowedCountry($allowCountries);
+        }
     }
 
 
