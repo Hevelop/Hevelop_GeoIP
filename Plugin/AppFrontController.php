@@ -96,6 +96,10 @@ class AppFrontController
             $resultRedirect = $this->_resultFactory->create(ResultFactory::TYPE_REDIRECT);
             $resultRedirect->setUrl($storeLocated->getBaseUrl());
             $resultRedirect->renderResult($this->response);
+            /**
+             * Prevent fatal error on \Magento\Framework\App\PageCache\Kernel:73
+             */
+            $this->response->setNoCacheHeaders();
             return $resultRedirect;
         }
 
