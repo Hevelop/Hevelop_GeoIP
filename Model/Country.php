@@ -10,6 +10,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Country
@@ -47,6 +48,11 @@ class Country extends AbstractClass
      */
     protected $remoteAddress;
 
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $_storeManager;
+
 
     /**
      * Country constructor.
@@ -69,6 +75,7 @@ class Country extends AbstractClass
         TimezoneInterface $_localeDate,
         DateTime $date,
         RemoteAddress $remoteAddress,
+        StoreManagerInterface $storeManager,
         array $data = []
     )
     {
@@ -76,8 +83,21 @@ class Country extends AbstractClass
 
         $this->geoIPWrapper = $geoIPWrapper;
         $this->remoteAddress = $remoteAddress;
+        $this->_storeManager = $storeManager;
 
-        $this->country = $this->getCountryByIp($this->remoteAddress->getRemoteAddress());
+        $ip = $this->remoteAddress->getRemoteAddress();
+
+        // HEVELOP (IT)
+        //$ip = '185.128.151.129';
+
+        // BITBUCKET (US)
+        //$ip = '104.192.143.2';
+
+        // MASCHERONI ()
+        //$ip = '35.157.151.144';
+        //var_dump($ip);
+
+        $this->country = $this->getCountryByIp($ip);
 
         $allowCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE));
         $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
@@ -153,6 +173,31 @@ class Country extends AbstractClass
         $this->allowed_countries = array_merge($this->allowed_countries, $countries);
 
         return $this;
+    }
+
+
+    /**
+     * Determine correct store based on geolocated country.
+     *
+     * @var string $country
+     * @return \Magento\Store\Api\Data\StoreInterface|null
+     */
+    public function getStoreFromCountry($country)
+    {
+
+        /** @var \Magento\Store\Model\ResourceModel\Store\Collection $stores */
+        $stores = $this->_storeManager->getStores(false, true);
+
+        /** @var \Magento\Store\Model\Store $store */
+        foreach ($stores as $store) {
+            $storeCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE, $store->getId()));
+            if (in_array($country, $storeCountries, true)) {
+                return $store;
+            }
+
+        }
+
+        return $this->_storeManager->getDefaultStoreView();
     }
 
 }

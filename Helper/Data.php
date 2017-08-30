@@ -105,4 +105,35 @@ class Data extends AbstractHelper
         return $ipaddress;
     }
 
+
+    /**
+     * @return bool
+     */
+    public function geoLocationAllowed()
+    {
+        $active = $this->isGeolocationActive();
+        $userAgentAllowed = $this->isUserAgentAllowed();
+        return $active && $userAgentAllowed;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isGeolocationActive()
+    {
+        // TODO: implement logic
+        return true;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function isUserAgentAllowed()
+    {
+        // TODO: implement logic
+        return true;
+    }
+
 }
