@@ -10,4 +10,13 @@
     <type name="Magento\Framework\App\FrontController">
         <plugin name="hevelop_valsana_plugin_appfrontcontroller" type="Hevelop\GeoIP\Plugin\AppFrontController"/>
     </type>
+
+    <type name="Magento\Framework\HTTP\PhpEnvironment\RemoteAddress">
+        <arguments>
+            <argument name="alternativeHeaders" xsi:type="array">
+                <item name="x-forwarded-for" xsi:type="string">HTTP_X_FORWARDED_FOR</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>
