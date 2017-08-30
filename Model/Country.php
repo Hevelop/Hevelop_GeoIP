@@ -91,7 +91,13 @@ class Country extends AbstractClass
         $ips = str_replace(' ', '', $ips);
         $ips = explode(',', $ips);
 
-        $ips = filter_var_array($ips, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+        foreach ($ips as $k => $ip) {
+            $valid = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+            if (!$valid) {
+                unset($ips[$k]);
+            }
+        }
+
         if (is_array($ips) && count($ips) > 0) {
             $ip = $ips[0];
 
