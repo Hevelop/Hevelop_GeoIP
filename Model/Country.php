@@ -86,7 +86,12 @@ class Country extends AbstractClass
         $this->_storeManager = $storeManager;
 
         $ips = $this->remoteAddress->getRemoteAddress();
+
+//        var_dump($ips);
+//        die;
+
         //$ips = '185.128.151.129, 10.0.2.251';
+        $ips = '104.192.143.2';
 
         $ips = str_replace(' ', '', $ips);
         $ips = explode(',', $ips);

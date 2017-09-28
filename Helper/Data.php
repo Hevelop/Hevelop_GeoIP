@@ -4,7 +4,6 @@ namespace Hevelop\GeoIP\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\App\RequestInterface;
 
 /**
  * Class Data
@@ -20,24 +19,16 @@ class Data extends AbstractHelper
     const DATE_FORMAT = 'h:i:s d/M/Y';
 
     /**
-     * Request object
-     *
-     * @var RequestInterface
-     */
-    protected $request;
-
-
-    /**
      * Data constructor.
-     * @param RequestInterface $httpRequest
+     * @param Context $context
      * @param array $data
      */
     public function __construct(
-        RequestInterface $httpRequest,
+        Context $context,
         array $data = []
     )
     {
-        $this->request = $httpRequest;
+        parent::__construct($context);
     }
 
     /**
@@ -86,18 +77,18 @@ class Data extends AbstractHelper
     {
         $ipaddress = '';
 
-        if ($this->request->getServer('HTTP_CLIENT_IP', false)) {
-            $ipaddress = $this->request->getServer('HTTP_CLIENT_IP');
-        } else if ($this->request->getServer('HTTP_X_FORWARDED_FOR', false)) {
-            $ipaddress = $this->request->getServer('HTTP_X_FORWARDED_FOR', false);
-        } else if ($this->request->getServer('HTTP_X_FORWARDED', false)) {
-            $ipaddress = $this->request->getServer('HTTP_X_FORWARDED', false);
-        } else if ($this->request->getServer('HTTP_FORWARDED_FOR', false)) {
-            $ipaddress = $this->request->getServer('HTTP_FORWARDED_FOR', false);
-        } else if ($this->request->getServer('HTTP_FORWARDED', false)) {
-            $ipaddress = $this->request->getServer('HTTP_FORWARDED', false);
-        } else if ($this->request->getServer('REMOTE_ADDR', false)) {
-            $ipaddress = $this->request->getServer('REMOTE_ADDR');
+        if ($this->_request->getServer('HTTP_CLIENT_IP', false)) {
+            $ipaddress = $this->_request->getServer('HTTP_CLIENT_IP');
+        } else if ($this->_request->getServer('HTTP_X_FORWARDED_FOR', false)) {
+            $ipaddress = $this->_request->getServer('HTTP_X_FORWARDED_FOR', false);
+        } else if ($this->_request->getServer('HTTP_X_FORWARDED', false)) {
+            $ipaddress = $this->_request->getServer('HTTP_X_FORWARDED', false);
+        } else if ($this->_request->getServer('HTTP_FORWARDED_FOR', false)) {
+            $ipaddress = $this->_request->getServer('HTTP_FORWARDED_FOR', false);
+        } else if ($this->_request->getServer('HTTP_FORWARDED', false)) {
+            $ipaddress = $this->_request->getServer('HTTP_FORWARDED', false);
+        } else if ($this->_request->getServer('REMOTE_ADDR', false)) {
+            $ipaddress = $this->_request->getServer('REMOTE_ADDR');
         }
 
         $ipaddress = str_replace(' ', '', $ipaddress);
@@ -115,7 +106,6 @@ class Data extends AbstractHelper
         $userAgentAllowed = $this->isUserAgentAllowed();
         return $active && $userAgentAllowed;
     }
-
 
     /**
      * @return bool

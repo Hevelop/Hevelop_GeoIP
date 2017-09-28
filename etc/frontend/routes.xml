@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!--
+  ~  @category Hevelop_Geoip
+  ~  @project Hevelop Geoip
+  ~  @author   Matteo Manfrin <matteo@hevelop.com>
+  ~  @copyright Copyright (c) 2017 Hevelop  (https://hevelop.com)
+  ~  @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
+  ~  @link     https://hevelop.com/
+  -->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="standard">
+        <route id="hevelop_geoip" frontName="hevelopgeoip">
+            <module name="Hevelop_Geoip" />
+        </route>
+    </router>
+</config>

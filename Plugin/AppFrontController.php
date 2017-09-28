@@ -2,7 +2,7 @@
 
 namespace Hevelop\GeoIP\Plugin;
 
-use Hevelop\GeoIP\Helper\Data;
+use Hevelop\GeoIP\Helper\Cookies;
 use Hevelop\GeoIP\Model\Country;
 use Magento\Framework\App\FrontControllerInterface;
 use Magento\Framework\App\RequestInterface;
@@ -36,7 +36,7 @@ class AppFrontController
     /**
      * @var Data
      */
-    protected $geoipHelper;
+    protected $geoipCookieHelper;
 
     /**
      * AppFrontController constructor.
@@ -44,7 +44,7 @@ class AppFrontController
      * @param ResultFactory $resultFactory
      * @param Http $response
      * @param Country $country
-     * @param Data $helperData
+     * @param Cookies $helperData
      * @param array $data
      */
     public function __construct(
@@ -52,7 +52,7 @@ class AppFrontController
         ResultFactory $resultFactory,
         Http $response,
         Country $country,
-        Data $helperData,
+        Cookies $helperData,
         array $data = []
     )
     {
@@ -60,7 +60,7 @@ class AppFrontController
         $this->_resultFactory = $resultFactory;
         $this->response = $response;
         $this->country = $country;
-        $this->geoipHelper = $helperData;
+        $this->geoipCookieHelper = $helperData;
     }
 
 
@@ -81,16 +81,30 @@ class AppFrontController
     {
         // return $proceed($request);
 
-        if (!$this->geoipHelper->geoLocationAllowed()) {
+        if (!$this->geoipCookieHelper->geoLocationAllowed()) {
             return $proceed($request);
         }
 
         if ($_SERVER['REQUEST_URI'] === '/') {
 
-            //var_dump($this->country->getCountry());
+//            var_dump($this->country->getCountry());
+
+            $geoipCookieValue = $this->geoipCookieHelper->getGeoipCookieCountryValue();
+            $storeCountry = $this->country->getCountry();
+
+            if($geoipCookieValue === null){
+                $this->geoipCookieHelper->setGeoipCookieCountry();
+            }elseif(
+                is_string($geoipCookieValue)
+                && strlen($geoipCookieValue) === 2
+                && $geoipCookieValue !== $this->country
+            ) {
+                $storeCountry = $geoipCookieValue;
+            }
 
             //@todo geoip localizzation
-            $storeLocated = $this->country->getStoreFromCountry($this->country->getCountry());
+            $storeLocated = $this->country->getStoreFromCountry($storeCountry);
+
             //var_dump($storeLocated->getCode());
             //die();
             $resultRedirect = $this->_resultFactory->create(ResultFactory::TYPE_REDIRECT);
