@@ -31,7 +31,7 @@ class Country extends AbstractClass
     /**
      * @var bool|mixed|null
      */
-    protected $country;
+    protected $country = null;
 
     /**
      * @var array
@@ -91,7 +91,9 @@ class Country extends AbstractClass
 //        die;
 
         //$ips = '185.128.151.129, 10.0.2.251';
-        $ips = '104.192.143.2';
+//        $ips = '104.192.143.2';
+
+//        print_r($ips);
 
         $ips = str_replace(' ', '', $ips);
         $ips = explode(',', $ips);
@@ -118,9 +120,16 @@ class Country extends AbstractClass
             $this->country = $this->getCountryByIp($ip);
 
             $allowCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE));
-            $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
             $this->addAllowedCountry($allowCountries);
         }
+
+        $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
+
+        if($this->country === null){
+            $this->country = $this->defaultCountry;
+        }
+
+
     }
 
 
