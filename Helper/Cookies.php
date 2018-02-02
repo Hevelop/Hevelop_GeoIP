@@ -9,6 +9,7 @@ use Magento\Framework\Stdlib\CookieManagerInterface;
 use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\Locale\CurrencyInterface;
 
 /**
  * Class Cookies
@@ -53,12 +54,18 @@ class Cookies extends DataHelper
     protected $_storeManager;
 
     /**
+     * @var CurrencyInterface
+     */
+    protected $_currency;
+
+    /**
      * Cookies constructor.
      * @param Context $context
      * @param Country $country
      * @param CookieManagerInterface $cookieManager
      * @param CookieMetadataFactory $cookieMetadataFactory
      * @param StoreManagerInterface $storeManager
+     * @param CurrencyInterface $currency
      * @param array $data
      */
     public function __construct(
@@ -67,6 +74,7 @@ class Cookies extends DataHelper
         CookieManagerInterface $cookieManager,
         CookieMetadataFactory $cookieMetadataFactory,
         StoreManagerInterface $storeManager,
+        CurrencyInterface $currency,
         array $data = []
     )
     {
@@ -76,6 +84,7 @@ class Cookies extends DataHelper
         $this->_storeManager = $cookieManager;
         $this->_cookieMetadataFactory = $cookieMetadataFactory;
         $this->_storeManager = $storeManager;
+        $this->_currency = $currency;
     }
 
     /**
@@ -198,4 +207,35 @@ class Cookies extends DataHelper
         );
     }
 
+    /**
+     * @param StoreManagerInterface $store
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getStoreCurrencies($store)
+    {
+        $currencies = explode(',',
+            $this->scopeConfig->getValue(
+                'currency/options/allow',
+                ScopeInterface::SCOPE_WEBSITE,
+                $store->getWebsite()->getCode()
+            )
+        );
+        $storeCurrencyCode = $this->scopeConfig->getValue(
+            'currency/options/default',
+            ScopeInterface::SCOPE_WEBSITE,
+            $store->getWebsite()->getCode()
+        );
+        $storeCurrencyName = $this->_currency->getCurrency($storeCurrencyCode)->getName();
+
+        $currenciesList = [];
+        $defaultCurrencyArray = array($storeCurrencyCode => $storeCurrencyName);
+        foreach ($currencies as $currency_code) {
+            if ($currency_code !== $storeCurrencyCode && !array_key_exists($currency_code, $currenciesList)) {
+                $currenciesList[$currency_code] = $this->_currency->getCurrency($currency_code)->getName();
+            }
+        }
+        $currenciesList = $defaultCurrencyArray + $currenciesList;
+        return $currenciesList;
+    }
 }

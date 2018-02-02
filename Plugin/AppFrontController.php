@@ -89,21 +89,34 @@ class AppFrontController
 
 //            var_dump($this->country->getCountry());
 
-            $geoipCookieValue = $this->geoipCookieHelper->getGeoipCookieCountryValue();
+            $geoIpCookie = $this->geoipCookieHelper->getGeoipCookieValue();
             $storeCountry = $this->country->getCountry();
 
-            if($geoipCookieValue === null){
-                $this->geoipCookieHelper->setGeoipCookieCountry();
-            }elseif(
-                is_string($geoipCookieValue)
-                && strlen($geoipCookieValue) === 2
-                && $geoipCookieValue !== $this->country
+            if (isset($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM])
+                && !is_null($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM])
+                && is_string($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM])
+                && strlen($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM]) === 2
+                && is_string($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM]) !== $this->country
             ) {
-                $storeCountry = $geoipCookieValue;
+                $storeCountry = $geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM];
+            } else {
+                $this->geoipCookieHelper->setGeoipCookieCountry();
             }
 
             //@todo geoip localizzation
             $storeLocated = $this->country->getStoreFromCountry($storeCountry);
+
+            // set currency from cookie
+            if (isset($geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM]) && !is_null($geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM])) {
+                $geoIpCookieCurrencyCode = $geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM];
+                $availableStoreCurrencies = $this->geoipCookieHelper->getStoreCurrencies($storeLocated);
+                if (is_string($geoIpCookieCurrencyCode)
+                    && strlen($geoIpCookieCurrencyCode) === 3
+                    && array_key_exists($geoIpCookieCurrencyCode, $availableStoreCurrencies)
+                ) {
+                    $storeLocated->setCurrentCurrencyCode($geoIpCookieCurrencyCode);
+                }
+            }
 
             //var_dump($storeLocated->getCode());
             //die();

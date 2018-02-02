@@ -1,7 +1,7 @@
 <?php
 /**
  *  @category Magento2EE_Project
- *  @project Magento 2 EE for Mohd
+ *  @project Magento 2 EE
  *  @author   Matteo Manfrin <matteo@hevelop.com>
  *  @copyright Copyright (c) 2017 Hevelop  (https://hevelop.com)
  */
