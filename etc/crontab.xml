@@ -1,14 +1,8 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
-        <job name="geoip_update">
-            <schedule>
-                <cron_expr>0 0 * * 5</cron_expr>
-            </schedule>
-            <run>
-                <model>geoip/cron::run</model>
-            </run>
+        <job name="geoip_update" instance="Hevelop\GeoIP\Model\Cron" method="run">
+            <schedule>0 0 * * 5</schedule>
         </job>
     </group>
 </config>
