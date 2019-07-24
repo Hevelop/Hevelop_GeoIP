@@ -2,7 +2,7 @@
   "name": "hevelop/geoip",
   "description": "maxmind geolocation",
   "require": {
-    "php": "~5.6.0|~7.0",
+    "php": "~5.6.0|~7.0|~7.1|~7.2",
     "magento/magento-composer-installer": "*"
   },
   "type": "magento2-module",
