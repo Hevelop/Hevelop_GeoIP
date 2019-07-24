@@ -7,11 +7,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
+        <tab id="hevelop_geoip" translate="label" sortOrder="1000">
+            <label>Hevelop Geoip</label>
+        </tab>
         <section id="hevelop_geoip" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
                  showInStore="1">
             <class>separator-top</class>
             <label>GeoIP</label>
-            <tab>hevelop_config</tab>
+            <tab>hevelop_geoip</tab>
             <resource>Hevelop_GeoIP::config</resource>
             <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1"
                    showInStore="1">

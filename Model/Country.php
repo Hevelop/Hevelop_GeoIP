@@ -108,14 +108,8 @@ class Country extends AbstractClass
         if (is_array($ips) && count($ips) > 0) {
             $ip = $ips[0];
 
-            // HEVELOP (IT)
-            //$ip = '185.128.151.129';
-
             // BITBUCKET (US)
             //$ip = '104.192.143.2';
-
-            // MASCHERONI ()
-            //$ip = '35.157.151.144';
 
             $this->country = $this->getCountryByIp($ip);
 

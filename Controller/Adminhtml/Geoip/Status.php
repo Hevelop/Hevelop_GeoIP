@@ -59,9 +59,13 @@ class Status extends Action
         /** @var $info Hevelop_GeoIP_Model_Info */
         $info = $this->geoIPInfoFactory->create();
 
-        $_realSize = filesize($info->getArchivePath());
-        $_totalSize = $_session->getData('_geoip_file_size');
-        echo $_totalSize ? $_realSize / $_totalSize * 100 : 0;
+        if(file_exists($info->getArchivePath())){
+            $_realSize = filesize($info->getArchivePath());
+            $_totalSize = $_session->getData('_geoip_file_size');
+            echo $_totalSize ? $_realSize / $_totalSize * 100 : 0;
+        }else{
+            echo 'No file found.';
+        }
     }
 
 }

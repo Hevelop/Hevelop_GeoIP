@@ -8,7 +8,7 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
     <type name="Magento\Framework\App\FrontController">
-        <plugin name="hevelop_valsana_plugin_appfrontcontroller" type="Hevelop\GeoIP\Plugin\AppFrontController"/>
+        <plugin name="hevelop_geoip_plugin_appfrontcontroller" type="Hevelop\GeoIP\Plugin\AppFrontController"/>
     </type>
 
     <type name="Magento\Framework\HTTP\PhpEnvironment\RemoteAddress">
