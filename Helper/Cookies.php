@@ -208,7 +208,7 @@ class Cookies extends DataHelper
     }
 
     /**
-     * @param StoreManagerInterface $store
+     * @param \Magento\Store\Api\Data\StoreInterface $store
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      */

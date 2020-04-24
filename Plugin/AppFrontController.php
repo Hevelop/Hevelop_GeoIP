@@ -7,6 +7,8 @@ use Hevelop\GeoIP\Model\Country;
 use Magento\Framework\App\FrontControllerInterface;
 use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\Response\Http;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\Controller\ResultFactory;
 
@@ -63,15 +65,12 @@ class AppFrontController
         $this->geoipCookieHelper = $helperData;
     }
 
-
     /**
      * @param FrontControllerInterface $subject
      * @param callable $proceed
      * @param RequestInterface $request
-     *
-     * @throws \InvalidArgumentException
-     *
-     * @return \Magento\Framework\Controller\ResultInterface
+     * @return ResultInterface
+     * @throws LocalizedException
      */
     public function aroundDispatch(
         FrontControllerInterface $subject,
@@ -79,47 +78,33 @@ class AppFrontController
         RequestInterface $request
     )
     {
-        // return $proceed($request);
-
         if (!$this->geoipCookieHelper->geoLocationAllowed()) {
             return $proceed($request);
         }
 
         if ($_SERVER['REQUEST_URI'] === '/') {
-
-//            var_dump($this->country->getCountry());
-
             $geoIpCookie = $this->geoipCookieHelper->getGeoipCookieValue();
             $storeCountry = $this->country->getCountry();
 
             if (isset($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM])
-                && !is_null($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM])
-                && is_string($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM])
-                && strlen($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM]) === 2
-                && is_string($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM]) !== $this->country
+                && strlen((string)$geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM]) === 2
+                && (string)($geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM]) !== (string)$storeCountry
             ) {
                 $storeCountry = $geoIpCookie[Cookies::COUNTRY_CODE_COOKIE_PARAM];
             } else {
                 $this->geoipCookieHelper->setGeoipCookieCountry();
             }
 
-            //@todo geoip localizzation
             $storeLocated = $this->country->getStoreFromCountry($storeCountry);
+            $availableStoreCurrencies = $this->geoipCookieHelper->getStoreCurrencies($storeLocated);
 
-            // set currency from cookie
-            if (isset($geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM]) && !is_null($geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM])) {
-                $geoIpCookieCurrencyCode = $geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM];
-                $availableStoreCurrencies = $this->geoipCookieHelper->getStoreCurrencies($storeLocated);
-                if (is_string($geoIpCookieCurrencyCode)
-                    && strlen($geoIpCookieCurrencyCode) === 3
-                    && array_key_exists($geoIpCookieCurrencyCode, $availableStoreCurrencies)
-                ) {
-                    $storeLocated->setCurrentCurrencyCode($geoIpCookieCurrencyCode);
-                }
+            if (isset($geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM])
+                && strlen((string)$geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM]) === 3
+                && isset($availableStoreCurrencies[(string)$geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM]])
+            ) {
+                $storeLocated->setCurrentCurrencyCode((string)$geoIpCookie[Cookies::CURRENCY_CODE_COOKIE_PARAM]);
             }
 
-            //var_dump($storeLocated->getCode());
-            //die();
             $resultRedirect = $this->_resultFactory->create(ResultFactory::TYPE_REDIRECT);
             $resultRedirect->setUrl($storeLocated->getBaseUrl());
             $resultRedirect->renderResult($this->response);

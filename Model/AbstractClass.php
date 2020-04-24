@@ -7,6 +7,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Session\Generic;
 use Magento\Store\Model\ScopeInterface;
 use Hevelop\GeoIP\Helper\Data;
+use Hevelop\GeoIP\Helper\Config as GeoIPConfigHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 
@@ -34,6 +35,11 @@ class AbstractClass
     protected $geoIPHelper;
 
     /**
+     * @var GeoIPConfigHelper
+     */
+    protected $geoIPConfigHelper;
+
+    /**
      * @var Generic
      */
     protected $generic;
@@ -59,6 +65,7 @@ class AbstractClass
      * AbstractClass constructor.
      * @param ScopeConfigInterface $scopeConfig
      * @param Data $geoIPHelper
+     * @param GeoIPConfigHelper $geoIPConfigHelper
      * @param Generic $generic
      * @param DirectoryList $directoryList
      * @param TimezoneInterface $_localeDate
@@ -68,23 +75,25 @@ class AbstractClass
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         Data $geoIPHelper,
+        GeoIPConfigHelper $geoIPConfigHelper,
         Generic $generic,
         DirectoryList $directoryList,
         TimezoneInterface $_localeDate,
         DateTime $date,
         array $data = []
-    )
-    {
+    ) {
         $this->directoryList = $directoryList;
         $this->scopeConfig = $scopeConfig;
         $this->geoIPHelper = $geoIPHelper;
+        $this->geoIPConfigHelper = $geoIPConfigHelper;
         $this->generic = $generic;
         $this->_localeDate = $_localeDate;
         $this->_date = $date;
         $this->localDir = 'geoip';
-        $this->localFile = $this->getAbsoluteDirectoryPath() . '/' . $this->localDir . '/GeoIP.dat';
-        $this->localArchive = $this->getAbsoluteDirectoryPath() . '/' . $this->localDir . '/GeoIP.dat.gz';
-        $this->remoteArchive = 'http://www.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz';
+        $this->localFile = $this->getAbsoluteDirectoryPath() . '/' . $this->localDir . '/GeoLite2-Country.mmdb';
+        $this->localArchive = $this->getAbsoluteDirectoryPath() . '/' . $this->localDir . '/GeoLite2-Country.tar.gz';
+        $this->geoIPConfigHelper = $geoIPConfigHelper;
+        $this->remoteArchive = $this->geoIPConfigHelper->getRemoteArchiveUrl();
     }
 
 
@@ -168,11 +177,14 @@ class AbstractClass
                 fclose($target);
 
                 if (filesize($this->localArchive)) {
-                    if ($helper->unGZip($this->localArchive, $this->localFile)) {
+                    $unArchivedDir = dirname($this->localFile) . DIRECTORY_SEPARATOR . 'GeoLite2-Country';
+                    if ($helper->unTarGz($this->localArchive, $unArchivedDir)
+                        && $helper->extractFileFromDir($unArchivedDir, $this->localFile)) {
+                        // todo delete archive folders
                         $ret['status'] = 'success';
                         $ret['date'] = $this->_date->date(Data::DATE_FORMAT);
                     } else {
-                        $ret['message'] = __('UnGzipping failed');
+                        $ret['message'] = __('Decompression failed');
                     }
                 } else {
                     $ret['message'] = __('Download failed.');

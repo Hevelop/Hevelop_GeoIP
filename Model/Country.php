@@ -3,7 +3,6 @@
 namespace Hevelop\GeoIP\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Session\Generic;
 use Hevelop\GeoIP\Helper\Data;
 use Magento\Framework\Stdlib\DateTime\DateTime;
@@ -11,6 +10,8 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Store\Model\StoreManagerInterface;
+use GeoIp2\Database\Reader as GeoIpReader;
+use Hevelop\GeoIP\Helper\Config as GeoIPConfigHelper;
 
 /**
  * Class Country
@@ -22,26 +23,10 @@ use Magento\Store\Model\StoreManagerInterface;
  */
 class Country extends AbstractClass
 {
-
-    /**
-     * @var string
-     */
-    protected $defaultCountry;
-
     /**
      * @var bool|mixed|null
      */
     protected $country = null;
-
-    /**
-     * @var array
-     */
-    protected $allowed_countries = [];
-
-    /**
-     * @var Wrapper
-     */
-    protected $geoIPWrapper;
 
     /**
      * @var RemoteAddress
@@ -53,22 +38,28 @@ class Country extends AbstractClass
      */
     protected $_storeManager;
 
+    /**
+     * @var GeoIpReader
+     */
+    protected $geoIpReader;
 
     /**
      * Country constructor.
      * @param ScopeConfigInterface $scopeConfig
-     * @param Wrapper $geoIPWrapper
+     * @param GeoIPConfigHelper $geoIPConfigHelper
      * @param Data $geoIPHelper
      * @param Generic $generic
      * @param DirectoryList $directoryList
      * @param TimezoneInterface $_localeDate
      * @param DateTime $date
      * @param RemoteAddress $remoteAddress
+     * @param StoreManagerInterface $storeManager
      * @param array $data
+     * @throws \MaxMind\Db\Reader\InvalidDatabaseException
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        Wrapper $geoIPWrapper,
+        GeoIPConfigHelper $geoIPConfigHelper,
         Data $geoIPHelper,
         Generic $generic,
         DirectoryList $directoryList,
@@ -77,149 +68,80 @@ class Country extends AbstractClass
         RemoteAddress $remoteAddress,
         StoreManagerInterface $storeManager,
         array $data = []
-    )
-    {
-        parent::__construct($scopeConfig, $geoIPHelper, $generic, $directoryList, $_localeDate, $date);
-
-        $this->geoIPWrapper = $geoIPWrapper;
+    ) {
+        parent::__construct($scopeConfig, $geoIPHelper, $geoIPConfigHelper, $generic, $directoryList, $_localeDate, $date);
         $this->remoteAddress = $remoteAddress;
         $this->_storeManager = $storeManager;
-
-        $ips = $this->remoteAddress->getRemoteAddress();
-
-//        var_dump($ips);
-//        die;
-
-        //$ips = '185.128.151.129, 10.0.2.251';
-//        $ips = '104.192.143.2';
-
-//        print_r($ips);
-
-        $ips = str_replace(' ', '', $ips);
-        $ips = explode(',', $ips);
-
-        foreach ($ips as $k => $ip) {
-            $valid = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
-            if (!$valid) {
-                unset($ips[$k]);
-            }
-        }
-
-        if (is_array($ips) && count($ips) > 0) {
-            $ip = $ips[0];
-
-            // BITBUCKET (US)
-            //$ip = '104.192.143.2';
-
-            $this->country = $this->getCountryByIp($ip);
-
-            $allowCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE));
-            $this->addAllowedCountry($allowCountries);
-        }
-
-        $this->defaultCountry = (string)$this->scopeConfig->getValue('general/country/default', ScopeInterface::SCOPE_STORE);
-
-        if($this->country === null){
-            $this->country = $this->defaultCountry;
-        }
-
-
     }
-
 
     /**
      * @param $ip
-     * @return bool|mixed|null
+     * @return string|null
+     * @throws \GeoIp2\Exception\AddressNotFoundException
+     * @throws \MaxMind\Db\Reader\InvalidDatabaseException
      */
     public function getCountryByIp($ip)
     {
-        /** @var $wrapper Hevelop_GeoIP_Model_Wrapper */
-        $wrapper = $this->geoIPWrapper;
-        if ($wrapper->geoip_open($this->localFile, 0)) {
-            $country = $wrapper->geoip_country_code_by_addr($ip);
-            $wrapper->geoip_close();
-
-            return $country;
+        if (file_exists($this->localFile)) {
+            if (!$this->geoIpReader) {
+                $this->geoIpReader = new GeoIpReader($this->localFile);
+            }
+            $record = $this->geoIpReader->country($ip);
+            if ($record instanceof \GeoIp2\Model\Country && $record->country instanceof \GeoIp2\Record\Country) {
+                return $record->country->isoCode;
+            }
         }
-
         return null;
     }
-
 
     /**
      * @return bool|mixed|null
      */
     public function getCountry()
     {
+        if ($this->country === null) {
+            $country = null;
+
+            $ips = $this->remoteAddress->getRemoteAddress();
+            $ips = str_replace(' ', '', $ips);
+            $ips = explode(',', $ips);
+            foreach ($ips as $k => $ip) {
+                $valid = filter_var(
+                    $ip,
+                    FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+                );
+                if (!$valid) {
+                    unset($ips[$k]);
+                }
+            }
+            if (is_array($ips) && count($ips) > 0) {
+                $ip = $ips[0];
+                try {
+                    $country = $this->getCountryByIp($ip);
+                } catch (\Exception $e) {
+                    // todo log exception
+                }
+            }
+            $this->country = $country === null ? $this->geoIPConfigHelper->getDefaultCountry() : $country;
+        }
         return $this->country;
     }
-
-
-    /**
-     * @param string $country
-     * @return bool
-     */
-    public function isCountryAllowed($country = '')
-    {
-        $country = $country ?: $this->country;
-        if (count($this->allowed_countries) && $country) {
-            return in_array($country, $this->allowed_countries, true);
-        }
-
-        return true;
-    }
-
-
-    /**
-     * @param string $country
-     * @return bool
-     */
-    public function isDefaultCountry($country = '')
-    {
-        $country = $country ?: $this->country;
-        if (!empty($this->defaultCountry) && $country) {
-            return ($this->defaultCountry === $country);
-        }
-
-        return false;
-    }
-
-
-    /**
-     * @param $countries
-     * @return $this
-     */
-    public function addAllowedCountry($countries)
-    {
-        $countries = is_array($countries) ? $countries : array($countries);
-        $this->allowed_countries = array_merge($this->allowed_countries, $countries);
-
-        return $this;
-    }
-
 
     /**
      * Determine correct store based on geolocated country.
      *
-     * @var string $country
+     * @param $country
      * @return \Magento\Store\Api\Data\StoreInterface|null
      */
     public function getStoreFromCountry($country)
     {
-
-        /** @var \Magento\Store\Model\ResourceModel\Store\Collection $stores */
         $stores = $this->_storeManager->getStores(false, true);
-
-        /** @var \Magento\Store\Model\Store $store */
         foreach ($stores as $store) {
-            $storeCountries = explode(',', (string)$this->scopeConfig->getValue('general/country/allow', ScopeInterface::SCOPE_STORE, $store->getId()));
+            $storeCountries = $this->geoIPConfigHelper->getAllowCountries($store->getWebsiteId());
             if (in_array($country, $storeCountries, true)) {
                 return $store;
             }
-
         }
-
         return $this->_storeManager->getDefaultStoreView();
     }
-
 }

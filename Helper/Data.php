@@ -4,6 +4,9 @@ namespace Hevelop\GeoIP\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Exception\LocalizedException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Class Data
@@ -67,6 +70,59 @@ class Data extends AbstractHelper
         fclose($dat);
         gzclose($archive);
         return filesize($destination);
+    }
+
+    /**
+     * @param $archive
+     * @param $destination
+     * @return bool
+     * @throws LocalizedException
+     */
+    public function unTarGz($archive, $destination)
+    {
+        $allowedExtensions = ['tar', 'gz'];
+        $archiveExt = pathinfo($archive, PATHINFO_EXTENSION);
+        if (!in_array($archiveExt, $allowedExtensions)) {
+            throw new LocalizedException(__("$archive extension not allowed!"));
+        }
+
+        if ($archiveExt == 'gz') {
+            $decompressedArchive = substr($archive, 0, strlen($archive) - 3);
+            if (file_exists($decompressedArchive)) {
+                unlink($decompressedArchive);
+            }
+            $phar = new \PharData($archive);
+            $phar->decompress();
+            $archive = $decompressedArchive;
+        }
+
+        $archiveExt = pathinfo($archive, PATHINFO_EXTENSION);
+        if ($archiveExt == 'tar') {
+            $phar = new \PharData($archive);
+            $phar->extractTo($destination, null, true);
+        } else {
+            throw new LocalizedException(__("$archive extension not allowed!"));
+        }
+
+        return file_exists($destination) && filesize($destination) > 0;
+    }
+
+    /**
+     * @param $dir
+     * @param $filePath
+     * @return bool
+     */
+    public function extractFileFromDir($dir, $filePath)
+    {
+        $dir_iterator = new RecursiveDirectoryIterator($dir);
+        $iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
+        foreach ($iterator as $file) {
+            if ($file->getFilename() === basename($filePath)) {
+                rename($file->getPathname(), $filePath);
+                return file_exists($filePath) && filesize($filePath);
+            }
+        }
+        return false;
     }
 
 

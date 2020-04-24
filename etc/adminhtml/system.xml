@@ -19,6 +19,10 @@
             <group id="general" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1"
                    showInStore="1">
                 <label>General</label>
+                <field id="geoip_license_key" translate="label comment" sortOrder="100" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>Maxmind license key</label>
+                </field>
                 <field id="geoip_status" translate="label comment" sortOrder="110" showInDefault="1" showInWebsite="0"
                        showInStore="0">
                     <label>GeoIP Database Downloaded</label>
