@@ -3,7 +3,8 @@
   "description": "maxmind geolocation",
   "require": {
     "php": "~5.6.0|~7.0|~7.1|~7.2",
-    "magento/magento-composer-installer": "*"
+    "magento/magento-composer-installer": "*",
+    "geoip2/geoip2": "~2.0"
   },
   "type": "magento2-module",
   "version": "1.0.0",
