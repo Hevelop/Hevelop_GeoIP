@@ -4,14 +4,14 @@ namespace Hevelop\GeoIP\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Archive\Gz;
+use Magento\Framework\Archive\Tar;
 use Magento\Framework\Exception\LocalizedException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 /**
  * Class Data
- * @package Hevelop\GeoIP\Helper
- * @category Magento_Module
  * @author   Simone Marcato <simone@hevelop.com>
  * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
  * @link     https://hevelop.com/
@@ -20,18 +20,31 @@ class Data extends AbstractHelper
 {
 
     const DATE_FORMAT = 'h:i:s d/M/Y';
+    /**
+     * @var Gz
+     */
+    protected $gzArchive;
+    /**
+     * @var Tar
+     */
+    protected $tarArchive;
 
     /**
      * Data constructor.
      * @param Context $context
+     * @param Gz $gzArchive
+     * @param Tar $tarArchive
      * @param array $data
      */
     public function __construct(
         Context $context,
+        Gz $gzArchive,
+        Tar $tarArchive,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct($context);
+        $this->gzArchive = $gzArchive;
+        $this->tarArchive = $tarArchive;
     }
 
     /**
@@ -50,7 +63,6 @@ class Data extends AbstractHelper
         curl_exec($ch);
         return curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
     }
-
 
     /**
      * Extracts single gzipped file. If archive will contain more then one file you will got a mess.
@@ -80,31 +92,14 @@ class Data extends AbstractHelper
      */
     public function unTarGz($archive, $destination)
     {
-        $allowedExtensions = ['tar', 'gz'];
-        $archiveExt = pathinfo($archive, PATHINFO_EXTENSION);
-        if (!in_array($archiveExt, $allowedExtensions)) {
-            throw new LocalizedException(__("$archive extension not allowed!"));
+        $tarDestination = substr($archive, 0, strlen($archive) - 3);
+        if (file_exists($tarDestination)) {
+            unlink($tarDestination);
         }
+        $tarArchive = $this->gzArchive->unpack($archive, $tarDestination);
+        $unpackedPath = $this->tarArchive->unpack($tarArchive, $destination . DIRECTORY_SEPARATOR);
 
-        if ($archiveExt == 'gz') {
-            $decompressedArchive = substr($archive, 0, strlen($archive) - 3);
-            if (file_exists($decompressedArchive)) {
-                unlink($decompressedArchive);
-            }
-            $phar = new \PharData($archive);
-            $phar->decompress();
-            $archive = $decompressedArchive;
-        }
-
-        $archiveExt = pathinfo($archive, PATHINFO_EXTENSION);
-        if ($archiveExt == 'tar') {
-            $phar = new \PharData($archive);
-            $phar->extractTo($destination, null, true);
-        } else {
-            throw new LocalizedException(__("$archive extension not allowed!"));
-        }
-
-        return file_exists($destination) && filesize($destination) > 0;
+        return file_exists($unpackedPath) && filesize($unpackedPath) > 0;
     }
 
     /**
@@ -125,9 +120,8 @@ class Data extends AbstractHelper
         return false;
     }
 
-
     /**
-     * @return string
+     * @return array
      */
     public function getClientIps()
     {
@@ -152,7 +146,6 @@ class Data extends AbstractHelper
         return $ipaddress;
     }
 
-
     /**
      * @return bool
      */
@@ -172,7 +165,6 @@ class Data extends AbstractHelper
         return true;
     }
 
-
     /**
      * @return bool
      */
@@ -181,5 +173,4 @@ class Data extends AbstractHelper
         // TODO: implement logic
         return true;
     }
-
 }

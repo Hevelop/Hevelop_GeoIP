@@ -2,10 +2,10 @@
 
 namespace Hevelop\GeoIP\Block\System\Config;
 
+use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Block\Widget\Button;
 use Magento\Backend\Model\UrlInterface;
 use Magento\Config\Block\System\Config\Form\Field;
-use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\MediaStorage\Model\File\Storage;
 use Magento\MediaStorage\Model\File\Storage\Flag;
@@ -31,7 +31,6 @@ class Synchronize extends Field
      */
     protected $mediaStorageFileStorage;
 
-
     /**
      * Synchronize constructor.
      * @param UrlInterface $backendUrlInterface
@@ -44,8 +43,7 @@ class Synchronize extends Field
         Storage $mediaStorageFileStorage,
         Context $context,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct($context, $data);
 
         $this->backendUrlInterface = $backendUrlInterface;
@@ -53,11 +51,10 @@ class Synchronize extends Field
         $this->setTemplate('Hevelop_GeoIP::hevelop/geoip/system/config/synchronize.phtml');
     }
 
-
     /**
      * Remove scope label
      *
-     * @param  AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
     public function render(AbstractElement $element)
@@ -66,18 +63,16 @@ class Synchronize extends Field
         return parent::render($element);
     }
 
-
     /**
      * Return element html
      *
-     * @param  AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
     protected function _getElementHtml(AbstractElement $element)
     {
         return $this->_toHtml();
     }
-
 
     /**
      * Return ajax url for synchronize button
@@ -89,7 +84,6 @@ class Synchronize extends Field
         return $this->backendUrlInterface->getUrl('adminhtml/geoip/synchronize');
     }
 
-
     /**
      * Return ajax url for synchronize button
      *
@@ -99,7 +93,6 @@ class Synchronize extends Field
     {
         return $this->backendUrlInterface->getUrl('adminhtml/geoip/status');
     }
-
 
     /**
      * Generate synchronize button html
@@ -122,7 +115,6 @@ class Synchronize extends Field
 
         return $button->toHtml();
     }
-
 
     /**
      * Retrieve last sync params settings
@@ -158,5 +150,4 @@ class Synchronize extends Field
         ];
 
     }
-
 }

@@ -2,8 +2,6 @@
 
 namespace Hevelop\GeoIP\Model;
 
-use Hevelop\GeoIP\Model\InfoFactory;
-
 /**
  * Class Cron
  * @package Hevelop\GeoIP\Model
@@ -20,18 +18,15 @@ class Cron
      */
     protected $geoIPInfoFactory;
 
-
     /**
      * Cron constructor.
      * @param \Hevelop\GeoIP\Model\InfoFactory $geoIPInfoFactory
      */
     public function __construct(
         InfoFactory $geoIPInfoFactory
-    )
-    {
+    ) {
         $this->geoIPInfoFactory = $geoIPInfoFactory;
     }
-
 
     /**
      * Method run.

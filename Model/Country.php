@@ -2,16 +2,16 @@
 
 namespace Hevelop\GeoIP\Model;
 
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Session\Generic;
-use Hevelop\GeoIP\Helper\Data;
-use Magento\Framework\Stdlib\DateTime\DateTime;
-use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
-use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
-use Magento\Store\Model\StoreManagerInterface;
 use GeoIp2\Database\Reader as GeoIpReader;
 use Hevelop\GeoIP\Helper\Config as GeoIPConfigHelper;
+use Hevelop\GeoIP\Helper\Data;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
+use Magento\Framework\Session\Generic;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Country

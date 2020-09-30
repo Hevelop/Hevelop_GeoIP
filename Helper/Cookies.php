@@ -3,13 +3,15 @@
 namespace Hevelop\GeoIP\Helper;
 
 use Hevelop\GeoIP\Helper\Data as DataHelper;
-use Magento\Framework\App\Helper\Context;
 use Hevelop\GeoIP\Model\Country;
-use Magento\Framework\Stdlib\CookieManagerInterface;
-use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
-use Magento\Store\Model\StoreManagerInterface;
-use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Archive\Gz;
+use Magento\Framework\Archive\Tar;
 use Magento\Framework\Locale\CurrencyInterface;
+use Magento\Framework\Stdlib\Cookie\CookieMetadataFactory;
+use Magento\Framework\Stdlib\CookieManagerInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class Cookies
@@ -61,6 +63,8 @@ class Cookies extends DataHelper
     /**
      * Cookies constructor.
      * @param Context $context
+     * @param Gz $gzArchive
+     * @param Tar $tarArchive
      * @param Country $country
      * @param CookieManagerInterface $cookieManager
      * @param CookieMetadataFactory $cookieMetadataFactory
@@ -70,15 +74,16 @@ class Cookies extends DataHelper
      */
     public function __construct(
         Context $context,
+        Gz $gzArchive,
+        Tar $tarArchive,
         Country $country,
         CookieManagerInterface $cookieManager,
         CookieMetadataFactory $cookieMetadataFactory,
         StoreManagerInterface $storeManager,
         CurrencyInterface $currency,
         array $data = []
-    )
-    {
-        parent::__construct($context, $data);
+    ) {
+        parent::__construct($context, $gzArchive, $tarArchive, $data);
         $this->country = $country;
         $this->_cookieManager = $cookieManager;
         $this->_storeManager = $cookieManager;
@@ -108,13 +113,14 @@ class Cookies extends DataHelper
      */
     public function getGeoipCookieDomain()
     {
-        $this->_storeManager->getStore( 0)->getBaseUrl();
+        $this->_storeManager->getStore(0)->getBaseUrl();
     }
 
     /**
      * @return array
      */
-    protected function getDefaultCookieData(){
+    protected function getDefaultCookieData()
+    {
         $defaultData = [];
         $storeLocated = $this->country->getStoreFromCountry($this->country->getCountry());
 
@@ -144,14 +150,15 @@ class Cookies extends DataHelper
         return $this->country;
     }
 
-    public function getGeoipCookieValue(){
+    public function getGeoipCookieValue()
+    {
 
-        if($this->_cookieManager->getCookie($this->getGeoipCookieName()) === null){
+        if ($this->_cookieManager->getCookie($this->getGeoipCookieName()) === null) {
             $this->setGeoipCookie();
             return $this->getDefaultCookieData();
         }
 
-//        var_dump(\Zend_Json::decode($this->_cookieManager->getCookie($this->getGeoipCookieName())));
+        //        var_dump(\Zend_Json::decode($this->_cookieManager->getCookie($this->getGeoipCookieName())));
 
         return \Zend_Json::decode($this->_cookieManager->getCookie($this->getGeoipCookieName()));
     }
@@ -165,13 +172,12 @@ class Cookies extends DataHelper
         return $cookieValue[self::COUNTRY_CODE_COOKIE_PARAM];
     }
 
-
     /**
      * @param null $country
      */
     public function setGeoipCookieCountry($country = null)
     {
-        if($country === null){
+        if ($country === null) {
             $country = $this->country->getCountry();
         }
 
@@ -186,9 +192,9 @@ class Cookies extends DataHelper
      */
     public function setGeoipCookie($data = [])
     {
-        if(!is_array($data)){
+        if (!is_array($data)) {
             return;
-        }elseif(empty($data)){
+        } elseif (empty($data)) {
             $data = $this->getDefaultCookieData();
         }
         $cookieData = \Zend_Json::encode($data);
@@ -214,7 +220,8 @@ class Cookies extends DataHelper
      */
     public function getStoreCurrencies($store)
     {
-        $currencies = explode(',',
+        $currencies = explode(
+            ',',
             $this->scopeConfig->getValue(
                 'currency/options/allow',
                 ScopeInterface::SCOPE_WEBSITE,
@@ -229,7 +236,7 @@ class Cookies extends DataHelper
         $storeCurrencyName = $this->_currency->getCurrency($storeCurrencyCode)->getName();
 
         $currenciesList = [];
-        $defaultCurrencyArray = array($storeCurrencyCode => $storeCurrencyName);
+        $defaultCurrencyArray = [$storeCurrencyCode => $storeCurrencyName];
         foreach ($currencies as $currency_code) {
             if ($currency_code !== $storeCurrencyCode && !array_key_exists($currency_code, $currenciesList)) {
                 $currenciesList[$currency_code] = $this->_currency->getCurrency($currency_code)->getName();

@@ -1,12 +1,18 @@
 <?php
 /**
- *  @category Magento2EE_Project
- *  @project Magento 2 EE
- *  @author   Matteo Manfrin <matteo@hevelop.com>
- *  @copyright Copyright (c) 2017 Hevelop  (https://hevelop.com)
+ * @category Magento2EE_Project
+ * @project Magento 2 EE
+ * @author   Matteo Manfrin <matteo@hevelop.com>
+ * @copyright Copyright (c) 2017 Hevelop  (https://hevelop.com)
  */
 
 namespace Hevelop\Geoip\Controller\Index;
+
+use Hevelop\Geoip\Helper\Cookies;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Response\Http;
+use Magento\Framework\Controller\ResultFactory;
 
 /**
  * Class ChangeCountry
@@ -16,13 +22,6 @@ namespace Hevelop\Geoip\Controller\Index;
  * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
  * @link     https://hevelop.com/
  */
-
-use Magento\Framework\Controller\ResultFactory;
-use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Action\Action;
-use Magento\Framework\App\Response\Http;
-use Hevelop\Geoip\Helper\Cookies;
-
 class ChangeCountry extends Action
 {
 
@@ -46,8 +45,7 @@ class ChangeCountry extends Action
         Context $context,
         Http $responseHttp,
         Cookies $geoipCookiesHelper
-    )
-    {
+    ) {
         $this->responseHttp = $responseHttp;
         $this->geoipCookiesHelper = $geoipCookiesHelper;
 
@@ -72,8 +70,9 @@ class ChangeCountry extends Action
      * @param $newCountry
      * @return bool|\Magento\Framework\Controller\ResultInterface
      */
-    protected function changeCurrentCountry($newCountry){
-        if($this->getCurrentCountry() === $newCountry){
+    protected function changeCurrentCountry($newCountry)
+    {
+        if ($this->getCurrentCountry() === $newCountry) {
             return false;
         }
         $this->geoipCookiesHelper->setGeoipCookieCountry($newCountry);
@@ -89,5 +88,4 @@ class ChangeCountry extends Action
         $this->responseHttp->setNoCacheHeaders();
         return $resultRedirect;
     }
-
 }

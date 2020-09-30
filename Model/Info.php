@@ -20,5 +20,4 @@ class Info extends AbstractClass
     {
         return file_exists($this->localFile) ? filemtime($this->localFile) : 0;
     }
-
 }

@@ -2,19 +2,17 @@
 
 namespace Hevelop\GeoIP\Model;
 
+use Hevelop\GeoIP\Helper\Config as GeoIPConfigHelper;
+use Hevelop\GeoIP\Helper\Data;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Session\Generic;
-use Magento\Store\Model\ScopeInterface;
-use Hevelop\GeoIP\Helper\Data;
-use Hevelop\GeoIP\Helper\Config as GeoIPConfigHelper;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use Magento\Store\Model\ScopeInterface;
 
 /**
  * Class AbstractClass
- * @package Hevelop\GeoIP\Model
- * @category Magento_Module
  * @author   Simone Marcato <simone@hevelop.com>
  * @license  http://opensource.org/licenses/agpl-3.0  GNU Affero General Public License v3 (AGPL-3.0)
  * @link     https://hevelop.com/
@@ -22,7 +20,10 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 class AbstractClass
 {
 
-    protected $localDir, $localFile, $localArchive, $remoteArchive;
+    protected $localDir;
+    protected $localFile;
+    protected $localArchive;
+    protected $remoteArchive;
 
     /**
      * @var ScopeConfigInterface
@@ -96,7 +97,6 @@ class AbstractClass
         $this->remoteArchive = $this->geoIPConfigHelper->getRemoteArchiveUrl();
     }
 
-
     /**
      * @return string
      */
@@ -104,7 +104,6 @@ class AbstractClass
     {
         return $this->localArchive;
     }
-
 
     /**
      * @return string
@@ -114,7 +113,6 @@ class AbstractClass
         return $this->scopeConfig->getValue('hevelop_geoip/general/geoip_directory', ScopeInterface::SCOPE_STORE);
     }
 
-
     /**
      * @return string
      */
@@ -122,7 +120,6 @@ class AbstractClass
     {
         return $this->directoryList->getPath($this->getRelativeDirectoryPath());
     }
-
 
     /**
      * @return string
@@ -149,16 +146,15 @@ class AbstractClass
         return '';
     }
 
-
     /**
-     * Method update.
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function update()
     {
-        /** @var $helper Hevelop_GeoIP_Helper_Data */
+        /** @var \Hevelop\GeoIP\Helper\Data $helper */
         $helper = $this->geoIPHelper;
 
-        $ret = array('status' => 'error');
+        $ret = ['status' => 'error'];
 
         if ($permissions_error = $this->checkFilePermissions()) {
             $ret['message'] = $permissions_error;
@@ -178,11 +174,16 @@ class AbstractClass
 
                 if (filesize($this->localArchive)) {
                     $unArchivedDir = dirname($this->localFile) . DIRECTORY_SEPARATOR . 'GeoLite2-Country';
-                    if ($helper->unTarGz($this->localArchive, $unArchivedDir)
-                        && $helper->extractFileFromDir($unArchivedDir, $this->localFile)) {
-                        // todo delete archive folders
-                        $ret['status'] = 'success';
-                        $ret['date'] = $this->_date->date(Data::DATE_FORMAT);
+                    $isExtracted = $helper->unTarGz($this->localArchive, $unArchivedDir);
+                    if ($isExtracted) {
+                        $isExtractedFile = $helper->extractFileFromDir($unArchivedDir, $this->localFile);
+                        if ($isExtractedFile) {
+                            // todo delete archive folders
+                            $ret['status'] = 'success';
+                            $ret['date'] = $this->_date->date(Data::DATE_FORMAT);
+                        } else {
+                            $ret['message'] = __('Decompression failed');
+                        }
                     } else {
                         $ret['message'] = __('Decompression failed');
                     }
@@ -194,5 +195,4 @@ class AbstractClass
 
         echo json_encode($ret);
     }
-
 }

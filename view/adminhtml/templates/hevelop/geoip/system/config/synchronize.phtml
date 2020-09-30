@@ -1,20 +1,7 @@
-<?php
-/**
- * @var Hevelop_GeoIP_Block_System_Config_Synchronize $this
- */
-?>
-
-<script type="text/javascript">
-    //<![CDATA[
-
-    //]]>
-</script>
-
+<?php /** @var \Hevelop\GeoIP\Block\System\Config\Synchronize $block */ ?>
 
 <script>
-    require(['jquery'],
-        function ($) {
-
+    require(['jquery', 'prototype'], function ($) {
             var u;
 
             function enableSyncButton() {
@@ -28,9 +15,9 @@
             }
 
             function checkStatus() {
-                u = new Ajax.PeriodicalUpdater('', '<?php echo $this->getAjaxStatusUpdateUrl() ?>', {
+                u = new Ajax.PeriodicalUpdater('', '<?php echo $block->getAjaxStatusUpdateUrl() ?>', {
                     method: 'get',
-                    frequency: 1,
+                    frequency: 3,
                     loaderArea: false,
 
                     onSuccess: function (transport) {
@@ -40,8 +27,10 @@
                                 u.stop();
                                 $('#sync_span').addClass('no-display');
                                 enableSyncButton();
-                            } else {
+                            } else if (!isNaN(percent)) {
                                 $('#sync_message_span').text(percent + '%');
+                            } else {
+                                $('#sync_message_span').text(transport.responseText);
                             }
                         } catch (e) {
                         }
@@ -54,7 +43,7 @@
                 $('#sync_span_error').addClass('no-display');
                 $('#sync_span').removeClass('no-display');
                 $('#sync_message_span').text('0%');
-                new Ajax.Request('<?php echo $this->getAjaxSyncUrl() ?>', {
+                new Ajax.Request('<?php echo $block->getAjaxSyncUrl() ?>', {
                     loaderArea: false,
                     asynchronous: true,
 
@@ -70,15 +59,14 @@
                         u.stop();
                     }
                 });
-                window.setTimeout(checkStatus, 1000);
-            }
 
-        }
-    );
+                checkStatus();
+            }
+        });
 </script>
 
-<?php echo $this->getButtonHtml() ?><span class="sync-indicator no-display" id="sync_span"><img alt="Synchronize"
+<?php echo $block->getButtonHtml() ?><span class="sync-indicator no-display" id="sync_span"><img alt="Synchronize"
                                                                                                 style="margin:0 5px"
                                                                                                 src="<?php echo $block->getViewFileUrl('images/ajax-loader-small.gif') ?>"/><span
-            id="sync_message_span"></span></span>
+        id="sync_message_span"></span></span>
 &nbsp; <span class="no-display error" id="sync_span_error"></span>
