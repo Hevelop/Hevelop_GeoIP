@@ -105,7 +105,7 @@ class Cookies extends DataHelper
      */
     public function getGeoipCookieDuration()
     {
-        return self::GEOIP_COOKIE_DURATION;
+        return $this->scopeConfig->getValue('hevelop_geoip/general/geoip_cookie_lifetime', ScopeInterface::SCOPE_STORE) ?: self::GEOIP_COOKIE_DURATION;
     }
 
     /**

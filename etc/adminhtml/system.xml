@@ -38,6 +38,11 @@
                     <label>GeoIP Database Directory</label>
                     <comment>The base directory in which the GeoIP database will be stored</comment>
                 </field>
+                <field id="geoip_cookie_lifetime" type="text" translate="label comment" sortOrder="140" showInDefault="1"
+                       showInWebsite="0" showInStore="0">
+                    <label>GeoIP Cookie Lifetime</label>
+                    <comment>Specifies (in seconds) the duration og GeoIP cookie. If not set, default is 1 week</comment>
+                </field>
             </group>
         </section>
     </system>
